@@ -117,3 +117,11 @@ I organized the `RaeTech.local` domain into Organizational Units to separate use
 ![Active Directory OU Structure](active-directory/04-active-directory-ou-structure.png)
 
 *Active Directory Users and Computers showing the organizational structure created for the RaeTech.local domain.*
+
+### Domain User Login Verification
+
+After joining WS01 to the `RaeTech.local` domain, I verified that a domain user could successfully authenticate to the workstation using Active Directory credentials.
+
+![Domain User Login Verification](active-directory/06-domain-user-login-verification.png)
+
+*Successful domain authentication on WS01 using a RaeTech.local user account.*
