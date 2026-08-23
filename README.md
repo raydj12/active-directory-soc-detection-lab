@@ -125,3 +125,40 @@ After joining WS01 to the `RaeTech.local` domain, I verified that a domain user 
 ![Domain User Login Verification](active-directory/06-domain-user-login-verification.png)
 
 *Successful domain authentication on WS01 using a RaeTech.local user account.*
+
+## Endpoint Security & Logging
+
+After building the domain environment, I configured WS01 to generate security telemetry that could later be analyzed in Microsoft Sentinel.
+
+I enabled process creation auditing, PowerShell Script Block Logging, and Sysmon to provide visibility into authentication activity, commands, and processes running on the workstation.
+
+### Process Creation Auditing
+
+I enabled Windows process creation auditing through Group Policy. This allowed Windows Security Event ID **4688** to record newly created processes and their command-line information.
+
+This became important later when investigating commands such as `net user`, `whoami`, `hostname`, and `ipconfig`.
+
+![Process Creation Auditing GPO](screenshots/07-process-creation-auditing-gpo-verification.png)
+
+*Group Policy configuration used to enable process creation auditing on WS01.*
+
+### PowerShell Script Block Logging
+
+PowerShell Script Block Logging was enabled to provide additional visibility into PowerShell commands executed on the workstation.
+
+I verified the configuration by confirming PowerShell Event ID **4104** was generated.
+
+![PowerShell Script Block Logging](screenshots/08-powershell-scriptblock-4104-verification.png)
+
+*PowerShell Event ID 4104 confirming Script Block Logging was working.*
+
+### Sysmon
+
+I installed Sysmon on WS01 and applied a custom configuration to increase endpoint visibility beyond the standard Windows Security logs.
+
+Sysmon provided detailed process telemetry that could be used to review process execution and parent-child relationships during an investigation.
+
+![Sysmon Process Creation](screenshots/10-sysmon-process-creation-event.png)
+
+*Sysmon process creation telemetry generated on WS01.*
+
