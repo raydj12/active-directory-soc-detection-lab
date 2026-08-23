@@ -211,14 +211,6 @@ The primary Windows Security events collected for the lab included:
 
 I used KQL to verify that Windows Security events from WS01 were successfully reaching the Log Analytics workspace.
 
-```kusto
-SecurityEvent
-| where EventID == 4625
-| where Computer startswith "WS01"
-| project TimeGenerated, Account, Computer, IpAddress, LogonType
-| sort by TimeGenerated desc
-```
-
 ![Sentinel Failed Logon KQL](sentinel/14-sentinel-kql-failed-logon-4625.png)
 
 *Windows Event ID 4625 from WS01 successfully ingested and queried in Microsoft Sentinel.*
