@@ -214,3 +214,50 @@ I used KQL to verify that Windows Security events from WS01 were successfully re
 ![Sentinel Failed Logon KQL](sentinel/14-sentinel-kql-failed-logon-4625.png)
 
 *Windows Event ID 4625 from WS01 successfully ingested and queried in Microsoft Sentinel.*
+
+## Detection Engineering & SOC Investigation
+
+After confirming that Windows telemetry was reaching Microsoft Sentinel, I used KQL to create detection logic for activity that could require SOC investigation.
+
+For each scenario, I generated the activity, verified the Windows events, searched the telemetry with KQL, created a Sentinel analytics rule, and investigated the resulting incident before deciding how it should be classified.
+
+### Detection 1 - Multiple Failed Logons
+
+The first detection monitored repeated failed authentication attempts on WS01 using Windows Security Event ID **4625**.
+
+Repeated login failures in a short period of time can be associated with password guessing or brute-force activity, but failed logons can also happen for legitimate reasons. Because of that, I treated the alert as something that required investigation rather than assuming it was an attack.
+
+The detection logic counted failed authentication attempts against the same account and host:
+
+```kusto
+SecurityEvent
+| where EventID == 4625
+| where Computer startswith "WS01"
+| summarize FailedAttempts=count(),
+            FirstAttempt=min(TimeGenerated),
+            LastAttempt=max(TimeGenerated)
+    by Account, Computer
+| where FailedAttempts >= 3
+```
+
+Microsoft Sentinel generated a **Medium severity** incident after the detection threshold was reached.
+
+![Failed Logon Incident Created](detections/15-sentinel-failed-logon-incident-created.png)
+
+*Microsoft Sentinel incident created after multiple failed authentication events were detected on WS01.*
+
+#### Investigation
+
+I reviewed the authentication timeline and found multiple failed logons followed by successful authentication events for `RAETECH\mreed`.
+
+The successful activity originated from the local workstation and was consistent with cached interactive login and workstation unlock activity. I also reviewed process activity around the same time and did not find obvious suspicious process execution during the reviewed window.
+
+Based on the available evidence and the fact that the activity was intentionally generated as part of the lab, I classified the incident as:
+
+**Benign Positive - Suspicious But Expected**
+
+![Failed Logon Incident Closed](detections/16-sentinel-incident-closed-benign-positive.png)
+
+*The incident was closed after the authentication activity was determined to be authorized lab testing.*
+
+**MITRE ATT&CK:** T1110 - Brute Force
