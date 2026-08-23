@@ -89,3 +89,23 @@ SOC Investigation
 | **Kali Linux** | Generated controlled reconnaissance and remote authentication activity |
 | **Nmap** | Performed network and service reconnaissance against the lab endpoint |
 | **SMB / smbclient** | Generated and tested remote Windows authentication activity |
+
+## Active Directory Environment
+
+I started the lab by building a small Windows domain to represent the identity environment of a business.
+
+The domain controller, **DC01**, was configured with Active Directory Domain Services and DNS for the `RaeTech.local` domain. I created organizational units, users, and security groups to give the environment a basic enterprise structure.
+
+A Windows 11 Pro workstation named **WS01** was then joined to the domain. I verified that a domain user could successfully sign in to the workstation using Active Directory credentials.
+
+### Domain Configuration
+
+| Component | Configuration |
+|---|---|
+| **Domain** | RaeTech.local |
+| **Domain Controller** | DC01 |
+| **Domain Services** | Active Directory Domain Services, DNS |
+| **Domain Workstation** | WS01 |
+| **Workstation OS** | Windows 11 Pro |
+| **Example Domain User** | RAETECH\mreed |
+| **Identity Structure** | Organizational Units, users, and security groups |
