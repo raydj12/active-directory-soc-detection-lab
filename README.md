@@ -407,6 +407,7 @@ The incident was closed as **Benign Positive - Suspicious But Expected**.
 
 *The Sentinel incident was closed after the source and timing of the activity were confirmed to match the authorized lab test.*
 
+**MITRE ATT&CK:** T1046 - Network Service Scanning
 
 ### Attack 5 - Remote SMB Authentication
 
@@ -448,3 +449,77 @@ Windows also generated Event ID **5140**, providing evidence that a network shar
 This scenario demonstrated how activity originating from a separate machine can be traced using the source IP, account, authentication result, logon type, and Windows Security events.
 
 **MITRE ATT&CK:** T1021.002 - SMB/Windows Admin Shares
+
+## Troubleshooting & Lessons Learned
+
+This lab did not work perfectly on the first attempt. Several parts required troubleshooting, which helped me understand how the environment worked instead of only following setup steps.
+
+### Sentinel Navigation and Rule Management
+
+Some Microsoft Sentinel options redirected between the Azure portal and Microsoft Defender portal, which made certain analytics and connector settings difficult to manage through the interface.
+
+I worked around this by using Azure Cloud Shell and the Sentinel REST API/CLI to create, update, verify, and close incidents and analytics rules.
+
+### Telemetry Collection Gaps
+
+During the Nmap network reconnaissance test, Windows generated Security Event ID 5152 locally, but the events did not initially appear in Sentinel.
+
+I found that the Azure Data Collection Rule was only collecting Event IDs 4624, 4625, and 4688. I updated the DCR to include Event ID 5152 and verified that the new events were successfully ingested into the `SecurityEvent` table.
+
+This reinforced that an event existing on an endpoint does not automatically mean the SIEM is collecting it.
+
+### Detection Rule Noise
+
+The account discovery detection initially created multiple incidents for the same activity because the rule used a 15-minute lookback while running every 5 minutes.
+
+The same events were being evaluated more than once. I enabled a 15-minute suppression period to reduce duplicate incidents while keeping the longer query window.
+
+This showed me that detection engineering is not only about identifying suspicious activity. A useful rule also needs to control unnecessary alert noise.
+
+### VirtualBox Bridged Networking
+
+The Kali Linux VM occasionally stopped receiving an IPv4 address even though its virtual network adapter was enabled.
+
+I traced the problem to the VirtualBox bridged networking driver on the Windows host. Resetting the VirtualBox NDIS6 bridge binding restored DHCP connectivity and allowed Kali to reconnect to the lab network.
+
+### Investigation Context
+
+Several activities in this lab were intentionally suspicious, including failed logons, account discovery commands, PowerShell activity, remote SMB authentication, and network scanning.
+
+The alerts themselves did not prove that the systems were compromised. I had to review the user, host, source IP, timestamps, authentication activity, process relationships, and surrounding events before deciding how each incident should be classified.
+
+One of the biggest lessons from the lab was that a detection can be technically correct even when the final incident is determined to be authorized or benign.
+
+## Key Takeaways
+
+This project helped me understand how the different parts of a SOC environment connect instead of viewing them as separate tools.
+
+Some of my main takeaways were:
+
+- **Telemetry comes before detection.** Before creating a rule, I had to confirm that Windows generated the event and that the event was actually reaching Microsoft Sentinel.
+
+- **KQL turns raw logs into useful evidence.** I used KQL to filter authentication and process events, build timelines, identify suspicious patterns, and create detection logic.
+
+- **An alert is not proof of compromise.** Each incident required additional investigation before I could determine whether the activity was malicious, suspicious, or expected.
+
+- **Process and authentication context matter.** Parent/child process relationships, usernames, source IP addresses, logon types, timestamps, and surrounding activity helped explain what actually happened.
+
+- **Detection rules require tuning.** A rule can successfully detect suspicious behavior while still producing unnecessary duplicate alerts. Adjusting lookback periods and suppression helped reduce noise.
+
+- **MITRE ATT&CK provides context for detections.** Mapping activity to ATT&CK techniques helped me understand how behaviors such as account discovery and network service scanning fit into common attacker workflows.
+
+- **Data collection has to be verified.** During the network scanning test, Event ID 5152 existed locally but was not initially being collected by Sentinel. Updating the Data Collection Rule fixed the visibility gap.
+
+- **The full investigation workflow matters more than simply generating alerts.** The most valuable part of the lab was following activity from the endpoint, through telemetry and detection, into a Sentinel incident that I could investigate and classify.
+
+## Conclusion
+
+This project gave me hands-on experience building and working through a small SOC environment from the ground up.
+
+I configured a domain-based Windows lab, collected endpoint telemetry, sent security events into Microsoft Sentinel, wrote KQL queries, created custom analytics rules, generated controlled attack activity from Kali Linux, and investigated the resulting incidents.
+
+The biggest thing I gained from this project was a better understanding of how all of those pieces connect. An attack does not automatically become an alert. The endpoint has to generate useful telemetry, that telemetry has to reach the SIEM, the detection logic has to recognize a suspicious pattern, and the analyst still has to investigate the context before deciding what actually happened.
+
+The lab also showed me that detection engineering involves more than simply making a rule fire. I had to troubleshoot missing telemetry, adjust data collection, tune noisy detections, review process and authentication activity, and verify my conclusions with evidence.
+
+This was completed as a hands-on home lab for learning and portfolio development. It gave me practical experience with the type of investigation and detection workflow I would expect to continue developing in an entry-level SOC Analyst role.
