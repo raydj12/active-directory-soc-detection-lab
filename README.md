@@ -65,3 +65,27 @@ Microsoft Sentinel
       |
       v
 SOC Investigation
+```
+
+## Technologies Used
+
+| Technology | Purpose in the Lab |
+|---|---|
+| **Oracle VirtualBox** | Hosted the virtual machines used in the lab |
+| **Windows Server** | Hosted the RaeTech.local Active Directory domain and DNS services |
+| **Windows 11 Pro** | Served as the domain-joined workstation and monitored endpoint |
+| **Active Directory Domain Services** | Managed domain users, groups, computers, and Group Policy |
+| **Group Policy** | Applied security and auditing settings to WS01 |
+| **Sysmon** | Provided additional endpoint process telemetry |
+| **Windows Security Auditing** | Recorded authentication and process creation events |
+| **PowerShell Script Block Logging** | Provided visibility into PowerShell activity |
+| **Microsoft Defender** | Provided built-in endpoint protection on WS01 |
+| **Azure Arc** | Connected the lab workstation to Azure as a managed machine |
+| **Azure Monitor Agent** | Collected Windows Security events from WS01 |
+| **Data Collection Rules** | Controlled which Windows events were sent to Azure |
+| **Log Analytics Workspace** | Stored and allowed querying of collected security telemetry |
+| **Microsoft Sentinel** | Provided SIEM detection, alerting, and incident investigation |
+| **Kusto Query Language (KQL)** | Used to search and analyze security events |
+| **Kali Linux** | Generated controlled reconnaissance and remote authentication activity |
+| **Nmap** | Performed network and service reconnaissance against the lab endpoint |
+| **SMB / smbclient** | Generated and tested remote Windows authentication activity |
