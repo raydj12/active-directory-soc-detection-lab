@@ -162,3 +162,63 @@ Sysmon provided detailed process telemetry that could be used to review process 
 
 *Sysmon process creation telemetry generated on WS01.*
 
+## Microsoft Sentinel Integration
+
+After configuring security logging on WS01, I connected the workstation to Azure so the Windows Security events could be analyzed in Microsoft Sentinel.
+
+WS01 was onboarded to **Azure Arc** and monitored using the **Azure Monitor Agent**. I created a Data Collection Rule to collect selected Windows Security events and send them to the `RaeTech-Sentinel-Workspace` Log Analytics workspace.
+
+The main Windows Security events collected for this lab included:
+
+- **4624** - Successful logon
+- **4625** - Failed logon
+- **4688** - Process creation
+
+The telemetry path used in the lab was:
+
+```text
+WS01
+  |
+  | Windows Security Events
+  v
+Azure Monitor Agent
+  |
+  | Data Collection Rule
+  v
+Log Analytics Workspace
+  |
+  v
+Microsoft Sentinel
+  |
+  +--> KQL Queries
+  +--> Analytics Rules
+  +--> Alerts / Incidents
+```
+
+## Microsoft Sentinel Integration
+
+After configuring security logging on WS01, I onboarded the workstation to Azure Arc and installed the Azure Monitor Agent.
+
+I created a Data Collection Rule to collect selected Windows Security events and send them to the `RaeTech-Sentinel-Workspace` Log Analytics workspace, where Microsoft Sentinel was enabled for detection and investigation.
+
+The primary Windows Security events collected for the lab included:
+
+- **4624** - Successful logon
+- **4625** - Failed logon
+- **4688** - Process creation
+
+### Security Event Ingestion Verification
+
+I used KQL to verify that Windows Security events from WS01 were successfully reaching the Log Analytics workspace.
+
+```kusto
+SecurityEvent
+| where EventID == 4625
+| where Computer startswith "WS01"
+| project TimeGenerated, Account, Computer, IpAddress, LogonType
+| sort by TimeGenerated desc
+```
+
+![Sentinel Failed Logon KQL](sentinel/14-sentinel-kql-failed-logon-4625.png)
+
+*Windows Event ID 4625 from WS01 successfully ingested and queried in Microsoft Sentinel.*
