@@ -109,3 +109,11 @@ A Windows 11 Pro workstation named **WS01** was then joined to the domain. I ver
 | **Workstation OS** | Windows 11 Pro |
 | **Example Domain User** | RAETECH\mreed |
 | **Identity Structure** | Organizational Units, users, and security groups |
+
+### Active Directory OU Structure
+
+I organized the `RaeTech.local` domain into Organizational Units to separate users and systems by function. This gave the lab a more realistic enterprise structure and provided a foundation for applying policies and managing domain objects.
+
+![Active Directory OU Structure](active-directory/04-active-directory-ou-structure.png)
+
+*Active Directory Users and Computers showing the organizational structure created for the RaeTech.local domain.*
