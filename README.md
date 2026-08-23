@@ -314,3 +314,57 @@ I classified the incident as:
 *Account discovery incident closed after the activity was confirmed as authorized lab testing.*
 
 **MITRE ATT&CK:** T1087.001 - Account Discovery: Local Account
+
+### Detection 3 - Windows Discovery Commands
+
+The third detection focused on common Windows discovery commands that can be used to gather information about the current user, hostname, and network configuration.
+
+I generated the activity on WS01 by running:
+
+```cmd
+whoami
+hostname
+ipconfig
+```
+
+These commands can be used legitimately by administrators and users, but they are also commonly seen during the discovery stage of an intrusion when an attacker is trying to understand a system they have accessed.
+
+#### Sentinel Investigation
+
+Windows recorded the commands through Event ID **4688** process creation events. I used KQL in Microsoft Sentinel to confirm that the commands were captured under the expected user and workstation.
+
+The query searched for the corresponding Windows processes:
+
+```kusto
+SecurityEvent
+| where EventID == 4688
+| where Computer startswith "WS01"
+| where NewProcessName endswith "whoami.exe"
+    or NewProcessName endswith "hostname.exe"
+    or NewProcessName endswith "ipconfig.exe"
+| project TimeGenerated, Account, NewProcessName, CommandLine, ParentProcessName, Computer
+| sort by TimeGenerated asc
+```
+
+![Windows Discovery Events](detections/21-sentinel-windows-discovery-events.png)
+
+*Microsoft Sentinel showing process creation telemetry for `whoami`, `hostname`, and `ipconfig` on WS01.*
+
+The custom analytics rule generated a **Low severity** incident after the activity matched the detection logic.
+
+I reviewed the user, host, commands, and surrounding process activity. The commands were intentionally executed as part of the RaeTech lab, and I did not identify obvious additional suspicious activity during the reviewed time window.
+
+The incident was classified as:
+
+**Benign Positive - Suspicious But Expected**
+
+![Windows Discovery Incident Closed](detections/23-sentinel-windows-discovery-incident-closed.png)
+
+*Windows discovery incident closed after the activity was confirmed as authorized lab testing.*
+
+**MITRE ATT&CK Tactic:** Discovery
+
+- **T1033** - System Owner/User Discovery (`whoami`)
+- **T1082** - System Information Discovery (`hostname`)
+- **T1016** - System Network Configuration Discovery (`ipconfig`)
+
