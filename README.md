@@ -374,19 +374,39 @@ After validating the local Windows detections, I added a Kali Linux VM to the la
 
 Kali used the address `192.168.20.103`, while WS01 used `192.168.20.102`. All testing was performed only against systems inside my own lab.
 
+
 ### Attack 4 - Network Reconnaissance
 
-I used Nmap from Kali Linux to identify network services exposed by WS01.
+I used Nmap from the Kali Linux VM to perform a basic network service scan against WS01. The purpose of the test was to simulate the type of reconnaissance an attacker may perform after identifying a Windows system on a network.
 
-The scan identified Windows services including:
+The scan identified several exposed Windows services, including:
 
 - **135/TCP** - RPC
 - **139/TCP** - NetBIOS
 - **445/TCP** - SMB
 
-This simulated the type of reconnaissance an attacker may perform after discovering a Windows host on a network.
+Windows Filtering Platform blocked many of the connection attempts and generated **Security Event ID 5152**. When I reviewed the events on WS01, I found that the Kali source IP `192.168.20.103` had contacted many different destination ports within only a few seconds.
 
-**MITRE ATT&CK:** T1046 - Network Service Scanning
+![Multiple Destination Ports](attacks/34-ws01-nmap-multiple-destination-ports.png)
+
+*The Windows Security events showed the same source IP contacting multiple destination ports in a short period of time. This pattern was consistent with the Nmap network service scan.*
+
+Initially, Event ID 5152 was only available locally on WS01. I updated the Azure Data Collection Rule to include Event ID 5152 and verified that the packet-drop events were successfully ingested into Microsoft Sentinel.
+
+![Event 5152 in Sentinel](attacks/35-sentinel-event-5152-nmap-ingestion.png)
+
+*Event ID 5152 records from WS01 appearing in the Sentinel `SecurityEvent` table confirmed that the network telemetry was successfully reaching the SIEM.*
+
+I then created a Sentinel analytics rule that looked for a single source IP contacting many different destination ports within a short period of time. The activity matched the rule conditions and generated a **Medium severity** network service scanning incident.
+
+During the investigation, I confirmed that the source IP belonged to my Kali Linux lab machine and that the timing matched the authorized Nmap test I performed. The detection itself was valid, but the activity was expected within the lab.
+
+The incident was closed as **Benign Positive - Suspicious But Expected**.
+
+![Network Service Scanning Incident Closed](attacks/39-sentinel-network-service-scanning-incident-closed.png)
+
+*The Sentinel incident was closed after the source and timing of the activity were confirmed to match the authorized lab test.*
+
 
 ### Attack 5 - Remote SMB Authentication
 
