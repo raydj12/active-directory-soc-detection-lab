@@ -261,3 +261,56 @@ Based on the available evidence and the fact that the activity was intentionally
 *The incident was closed after the authentication activity was determined to be authorized lab testing.*
 
 **MITRE ATT&CK:** T1110 - Brute Force
+
+### Detection 2 - Account Discovery via `net user`
+
+The second detection focused on Windows account discovery activity.
+
+I generated the activity on WS01 by running:
+
+```cmd
+net user
+```
+
+Attackers can use this command to identify local accounts on a Windows system after gaining access. Because the same command can also be used legitimately by administrators, I treated the activity as something that required context before determining whether it was malicious.
+
+Windows recorded the activity through process creation events. In Sentinel, I identified both `net.exe` and `net1.exe` running under the `RAETECH\mreed` account.
+
+![Account Discovery Net User](detections/17-sentinel-account-discovery-net-user.png)
+
+*Microsoft Sentinel process telemetry showing `net.exe` and `net1.exe` executing the account discovery command.*
+
+#### Process Chain Investigation
+
+I reviewed the surrounding process activity to understand how the command was launched.
+
+The process chain showed:
+
+```text
+explorer.exe
+    |
+    v
+cmd.exe
+    |
+    v
+net.exe
+    |
+    v
+net1.exe
+```
+
+![Account Discovery Process Chain](detections/18-sentinel-account-discovery-process-chain.png)
+
+*Process creation events used to reconstruct the execution chain for the `net user` activity.*
+
+The activity originated from an interactive Command Prompt session on WS01. I did not observe obvious additional suspicious process activity in the reviewed time window, and the command was intentionally generated as part of the lab.
+
+I classified the incident as:
+
+**Benign Positive - Suspicious But Expected**
+
+![Account Discovery Incident Closed](detections/19-sentinel-account-discovery-incident-closed.png)
+
+*Account discovery incident closed after the activity was confirmed as authorized lab testing.*
+
+**MITRE ATT&CK:** T1087.001 - Account Discovery: Local Account
