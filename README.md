@@ -221,7 +221,7 @@ After confirming that Windows telemetry was reaching Microsoft Sentinel, I used 
 
 For each scenario, I generated the activity, verified the Windows events, searched the telemetry with KQL, created a Sentinel analytics rule, and investigated the resulting incident before deciding how it should be classified.
 
-### Detection 1 - Multiple Failed Logons
+### Incident 1 - Multiple Failed Logons
 
 The first detection monitored repeated failed authentication attempts on WS01 using Windows Security Event ID **4625**.
 
@@ -262,7 +262,7 @@ Based on the available evidence and the fact that the activity was intentionally
 
 **MITRE ATT&CK:** T1110 - Brute Force
 
-### Detection 2 - Account Discovery via `net user`
+### Incident 2 - Account Discovery via `net user`
 
 The second detection focused on Windows account discovery activity.
 
@@ -315,7 +315,7 @@ I classified the incident as:
 
 **MITRE ATT&CK:** T1087.001 - Account Discovery: Local Account
 
-### Detection 3 - Windows Discovery Commands
+### Incident 3 - Windows Discovery Commands
 
 The third detection focused on common Windows discovery commands that can be used to gather information about the current user, hostname, and network configuration.
 
@@ -375,7 +375,7 @@ After validating the local Windows detections, I added a Kali Linux VM to the la
 Kali used the address `192.168.20.103`, while WS01 used `192.168.20.102`. All testing was performed only against systems inside my own lab.
 
 
-### Attack 4 - Network Reconnaissance
+### Incident 4 - Network Reconnaissance
 
 I used Nmap from the Kali Linux VM to perform a basic network service scan against WS01. The purpose of the test was to simulate the type of reconnaissance an attacker may perform after identifying a Windows system on a network.
 
@@ -409,7 +409,7 @@ The incident was closed as **Benign Positive - Suspicious But Expected**.
 
 **MITRE ATT&CK:** T1046 - Network Service Scanning
 
-### Attack 5 - Remote SMB Authentication
+### Incident - Remote SMB Authentication
 
 After identifying SMB on TCP port 445, I used Kali to generate remote authentication activity against WS01 using the dedicated `soclab` test account.
 
